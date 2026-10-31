@@ -132,9 +132,15 @@
             letter-spacing: 0.5px;
         }
 
+        .right-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
         .btn-group {
             display: flex;
-            gap: 15px;
+            gap: 12px;
         }
 
         .sci-btn {
@@ -154,6 +160,40 @@
             border-color: rgba(79, 172, 254, 0.8);
             box-shadow: 0 0 20px rgba(79, 172, 254, 0.4);
             transform: translateY(-2px);
+        }
+
+        /* X (Twitter) 科技感社交图标样式 */
+        .x-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .x-link svg {
+            width: 18px;
+            height: 18px;
+            fill: #ffffff;
+            transition: fill 0.3s ease;
+        }
+
+        .x-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #00f2fe;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        .x-link:hover svg {
+            fill: #00f2fe;
         }
 
         /* 模态框（点击图片弹出大图查看） */
@@ -244,143 +284,5 @@
             </div>
             <div class="controls-bar">
                 <div class="info-text" id="infoText">正在加载报表图片...</div>
-                <div class="btn-group">
-                    <button class="sci-btn" id="prevBtn">上一张</button>
-                    <button class="sci-btn" id="nextBtn">下一张</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 全屏灯箱模态框 -->
-    <div class="modal" id="imageModal">
-        <div class="modal-close" id="modalClose">&times;</div>
-        <img id="modalImg" src="" alt="Zoomed Image">
-    </div>
-
-    <script>
-        // ==================== 1. 动态粒子光效渲染 (Canvas) ====================
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        let particles = [];
-        const numParticles = 40;
-
-        for (let i = 0; i < numParticles; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                radius: Math.random() * 2 + 1,
-                vx: (Math.random() - 0.5) * 0.3,
-                vy: (Math.random() - 0.5) * 0.3,
-                alpha: Math.random() * 0.6 + 0.2
-            });
-        }
-
-        function drawBackground() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'rgba(5, 7, 18, 0.25)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.lineWidth = 0.5;
-            for (let i = 0; i < particles.length; i++) {
-                let p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-
-                if (p.x < 0) p.x = canvas.width;
-                if (p.x > canvas.width) p.x = 0;
-                if (p.y < 0) p.y = canvas.height;
-                if (p.y > canvas.height) p.y = 0;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(147, 197, 253, ${p.alpha})`;
-                ctx.fill();
-
-                for (let j = i + 1; j < particles.length; j++) {
-                    let p2 = particles[j];
-                    let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                    if (dist < 130) {
-                        ctx.strokeStyle = `rgba(167, 139, 250, ${0.2 * (1 - dist / 130)})`;
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
-                    }
-                }
-            }
-            requestAnimationFrame(drawBackground);
-        }
-        drawBackground();
-
-        // ==================== 2. 前端业务逻辑（轮播与交互 - 使用你指定的四张本地图片） ====================
-        const mockReportImages = [
-            { id: 1, url: 'illust_51851354_20261031_001034.jpg', title: '01' },
-            { id: 2, url: 'illust_106495693_20261031_001210.jpg', title: '02' },
-            { id: 3, url: 'illust_113051559_20261031_001532.jpg', title: '03' },
-            { id: 4, url: 'illust_128842292_20261031_001044.jpg', title: '04' }
-        ];
-
-        let currentIndex = 0;
-        let slideTimer = null;
-
-        const carouselImg = document.getElementById('carouselImg');
-        const infoText = document.getElementById('infoText');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const carouselViewport = document.getElementById('carouselViewport');
-        const imageModal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('modalImg');
-        const modalClose = document.getElementById('modalClose');
-
-        function updateSlide(index) {
-            carouselImg.style.opacity = 0;
-            setTimeout(() => {
-                currentIndex = (index + mockReportImages.length) % mockReportImages.length;
-                const currentItem = mockReportImages[currentIndex];
-                carouselImg.src = currentItem.url;
-                infoText.textContent = `[图 ${currentIndex + 1} / ${mockReportImages.length}] ${currentItem.title}`;
-                carouselImg.style.opacity = 1;
-            }, 200);
-        }
-
-        function nextSlide() { updateSlide(currentIndex + 1); }
-        function prevSlide() { updateSlide(currentIndex - 1); }
-
-        function startAutoPlay() { slideTimer = setInterval(nextSlide, 5000); }
-        function stopAutoPlay() { clearInterval(slideTimer); }
-
-        nextBtn.addEventListener('click', () => { nextSlide(); stopAutoPlay(); startAutoPlay(); });
-        prevBtn.addEventListener('click', () => { prevSlide(); stopAutoPlay(); startAutoPlay(); });
-
-        carouselViewport.addEventListener('click', () => {
-            modalImg.src = mockReportImages[currentIndex].url;
-            imageModal.classList.add('active');
-            stopAutoPlay();
-        });
-
-        modalClose.addEventListener('click', () => {
-            imageModal.classList.remove('active');
-            startAutoPlay();
-        });
-
-        imageModal.addEventListener('click', (e) => {
-            if (e.target === imageModal) {
-                imageModal.classList.remove('active');
-                startAutoPlay();
-            }
-        });
-
-        updateSlide(0);
-        startAutoPlay();
-    </script>
-</body>
-</html>
+                
+                <div class="right-
