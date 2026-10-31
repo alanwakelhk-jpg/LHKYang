@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 智能报表图文视界 | Sci-Fi Report Viewer</title>
+    <title>AlanWake|Yang的资源库 | Sci-Fi Report Viewer</title>
     <style>
         * {
             margin: 0;
@@ -17,10 +17,15 @@
             height: 100%;
             overflow: hidden;
             background-color: #05050a;
+            /* 引入 AI 生成的赛博朋克背景底图 */
+            background-image: url('lucid-origin_A_futuristic_cyberpunk_background_deep_dark_blue_and_neon_purple_gradient_glowin-0.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: #ffffff;
         }
 
-        /* 动态渐变与粒子背景画布 */
+        /* 动态粒子特效画布层（叠加在背景图上） */
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -28,6 +33,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+            pointer-events: none;
         }
 
         /* 主容器布局 */
@@ -69,12 +75,12 @@
             width: 90%;
             max-width: 900px;
             height: 520px;
-            background: rgba(15, 23, 42, 0.55);
+            background: rgba(15, 23, 42, 0.65); /* 略微提高不透明度，确保报表图片清晰 */
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(79, 172, 254, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(79, 172, 254, 0.15);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -112,8 +118,8 @@
         .controls-bar {
             width: 100%;
             height: 18%;
-            background: rgba(10, 15, 30, 0.4);
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(10, 15, 30, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -122,7 +128,7 @@
 
         .info-text {
             font-size: 0.9rem;
-            color: #a0aec0;
+            color: #cbd5e1;
             letter-spacing: 0.5px;
         }
 
@@ -132,7 +138,7 @@
         }
 
         .sci-btn {
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(177, 122, 255, 0.2));
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.25), rgba(177, 122, 255, 0.25));
             border: 1px solid rgba(79, 172, 254, 0.4);
             color: #fff;
             padding: 8px 18px;
@@ -144,7 +150,7 @@
         }
 
         .sci-btn:hover {
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.4), rgba(177, 122, 255, 0.4));
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.45), rgba(177, 122, 255, 0.45));
             border-color: rgba(79, 172, 254, 0.8);
             box-shadow: 0 0 20px rgba(79, 172, 254, 0.4);
             transform: translateY(-2px);
@@ -157,7 +163,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(3, 7, 18, 0.85);
+            background: rgba(3, 7, 18, 0.88);
             backdrop-filter: blur(20px);
             display: flex;
             align-items: center;
@@ -222,7 +228,7 @@
 </head>
 <body>
 
-    <!-- 动态背景 Canvas -->
+    <!-- 动态背景粒子特效 Canvas -->
     <canvas id="bg-canvas"></canvas>
 
     <div class="container">
@@ -253,7 +259,7 @@
     </div>
 
     <script>
-        // ==================== 1. 动态渐变背景与粒子特效 (Canvas) ====================
+        // ==================== 1. 动态粒子光效渲染 (Canvas) ====================
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
 
@@ -265,29 +271,23 @@
         resizeCanvas();
 
         let particles = [];
-        const numParticles = 45;
+        const numParticles = 40;
 
         for (let i = 0; i < numParticles; i++) {
             particles.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
                 radius: Math.random() * 2 + 1,
-                vx: (Math.random() - 0.5) * 0.4,
-                vy: (Math.random() - 0.5) * 0.4,
-                alpha: Math.random() * 0.5 + 0.2
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                alpha: Math.random() * 0.6 + 0.2
             });
         }
 
-        let hue = 220;
         function drawBackground() {
-            // 动态流光渐变背景
+            // 使用半透明压暗层与底层背景图融合，使漂浮粒子自带科技感光晕
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            gradient.addColorStop(0, '#030712');
-            gradient.addColorStop(0.5, '#0b132b');
-            gradient.addColorStop(1, '#1c103b');
-            ctx.fillStyle = gradient;
+            ctx.fillStyle = 'rgba(5, 7, 18, 0.25)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // 绘制漂浮连接粒子
@@ -311,8 +311,8 @@
                 for (let j = i + 1; j < particles.length; j++) {
                     let p2 = particles[j];
                     let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                    if (dist < 120) {
-                        ctx.strokeStyle = `rgba(167, 139, 250, ${0.15 * (1 - dist / 120)})`;
+                    if (dist < 130) {
+                        ctx.strokeStyle = `rgba(167, 139, 250, ${0.2 * (1 - dist / 130)})`;
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
@@ -325,7 +325,6 @@
         drawBackground();
 
         // ==================== 2. 前端业务逻辑（轮播与交互） ====================
-        // 模拟从后端 API 获取的报表图片列表（实际项目中通过 fetch('/api/report-images') 替代）
         const mockReportImages = [
             { id: 1, url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80', title: 'Q3 业务营收综合增长曲线图' },
             { id: 2, url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80', title: '多维数据资产流向热力分析图' },
@@ -335,71 +334,3 @@
 
         let currentIndex = 0;
         let slideTimer = null;
-
-        const carouselImg = document.getElementById('carouselImg');
-        const infoText = document.getElementById('infoText');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const carouselViewport = document.getElementById('carouselViewport');
-        const imageModal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('modalImg');
-        const modalClose = document.getElementById('modalClose');
-
-        function updateSlide(index, direction = 'next') {
-            // 添加简单淡入淡出动画过渡
-            carouselImg.style.opacity = 0;
-            setTimeout(() => {
-                currentIndex = (index + mockReportImages.length) % mockReportImages.length;
-                const currentItem = mockReportImages[currentIndex];
-                carouselImg.src = currentItem.url;
-                infoText.textContent = `[图 ${currentIndex + 1} / ${mockReportImages.length}] ${currentItem.title}`;
-                carouselImg.style.opacity = 1;
-            }, 200);
-        }
-
-        function nextSlide() {
-            updateSlide(currentIndex + 1, 'next');
-        }
-
-        function prevSlide() {
-            updateSlide(currentIndex - 1, 'prev');
-        }
-
-        // 自动轮播定时器（每 5 秒切换）
-        function startAutoPlay() {
-            slideTimer = setInterval(nextSlide, 5000);
-        }
-
-        function stopAutoPlay() {
-            clearInterval(slideTimer);
-        }
-
-        // 事件绑定
-        nextBtn.addEventListener('click', () => { nextSlide(); stopAutoPlay(); startAutoPlay(); });
-        prevBtn.addEventListener('click', () => { prevSlide(); stopAutoPlay(); startAutoPlay(); });
-
-        // 点击图片放大（Lightbox 效果）
-        carouselViewport.addEventListener('click', () => {
-            modalImg.src = mockReportImages[currentIndex].url;
-            imageModal.classList.add('active');
-            stopAutoPlay();
-        });
-
-        modalClose.addEventListener('click', () => {
-            imageModal.classList.remove('active');
-            startAutoPlay();
-        });
-
-        imageModal.addEventListener('click', (e) => {
-            if (e.target === imageModal) {
-                imageModal.classList.remove('active');
-                startAutoPlay();
-            }
-        });
-
-        // 初始化加载
-        updateSlide(0);
-        startAutoPlay();
-    </script>
-</body>
-</html>
