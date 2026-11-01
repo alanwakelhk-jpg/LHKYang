@@ -1,436 +1,349 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 智能报表图文视界 | Sci-Fi Report Viewer</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberCore - AI Gallery</title>
+  
+  <!-- 引入 Swiper.js 样式与字体图标 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #05050a;
-            /* 引入 AI 生成的赛博朋克背景底图 */
-            background-image: url('lucid-origin_A_futuristic_cyberpunk_background_deep_dark_blue_and_neon_purple_gradient_glowin-0.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            color: #ffffff;
-        }
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        /* 动态粒子特效画布层（叠加在背景图上） */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      /* CSS 动态科技渐变背景 */
+      background: linear-gradient(-45deg, #05050d, #081226, #0e051c, #020712);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
 
-        /* 主容器布局 */
-        .container {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            animation: fadeInDown 1s ease-out;
-        }
+    /* Canvas 粒子层 */
+    #particle-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
 
-        header h1 {
-            font-size: 2.2rem;
-            letter-spacing: 2px;
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #b17aff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(79, 172, 254, 0.4);
-        }
+    /* 整体展示容器 */
+    .showcase-wrapper {
+      position: relative;
+      z-index: 2;
+      width: 90%;
+      max-width: 950px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        header p {
-            color: #8b9bb4;
-            font-size: 0.95rem;
-            margin-top: 8px;
-            letter-spacing: 1px;
-        }
+    /* 毛玻璃展示卡片 */
+    .glass-card {
+      width: 100%;
+      background: rgba(13, 20, 38, 0.45);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      box-shadow: 0 0 35px rgba(0, 243, 255, 0.15), 
+                  inset 0 0 15px rgba(255, 0, 128, 0.1);
+      padding: 24px;
+      overflow: hidden;
+      transition: border-color 0.3s ease;
+    }
 
-        /* 玻璃拟态（Glassmorphism）展示主体 */
-        .glass-card {
-            position: relative;
-            width: 90%;
-            max-width: 900px;
-            height: 520px;
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(79, 172, 254, 0.15);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+    .glass-card:hover {
+      border-color: rgba(0, 243, 255, 0.5);
+    }
 
-        /* 图片轮播视窗 */
-        .carousel-viewport {
-            width: 100%;
-            height: 82%;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
+    /* Swiper 样式微调 */
+    .swiper {
+      width: 100%;
+      border-radius: 14px;
+    }
 
-        .carousel-viewport img {
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.08);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
-        }
+    .swiper-slide {
+      position: relative;
+      height: 480px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+    }
 
-        .carousel-viewport img:hover {
-            transform: scale(1.02);
-        }
+    .swiper-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: contrast(105%) saturate(110%);
+      transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
 
-        /* 底部控制面板 */
-        .controls-bar {
-            width: 100%;
-            height: 18%;
-            background: rgba(10, 15, 30, 0.5);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-        }
+    .swiper-slide:hover img {
+      transform: scale(1.03);
+    }
 
-        .info-text {
-            font-size: 0.9rem;
-            color: #cbd5e1;
-            letter-spacing: 0.5px;
-        }
+    /* AI 描述信息覆盖层 */
+    .ai-badge-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 24px;
+      background: linear-gradient(to top, rgba(3, 5, 12, 0.95), transparent);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
-        .right-section {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+    .ai-tag {
+      align-self: flex-start;
+      background: linear-gradient(90deg, #00f3ff, #ff007f);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
 
-        .btn-group {
-            display: flex;
-            gap: 12px;
-        }
+    .ai-desc {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #e0e8ff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
 
-        .sci-btn {
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.25), rgba(177, 122, 255, 0.25));
-            border: 1px solid rgba(79, 172, 254, 0.4);
-            color: #fff;
-            padding: 8px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(79, 172, 254, 0.1);
-        }
+    /* 霓虹发光左右按钮 */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(13, 20, 38, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid #00f3ff;
+      color: #00f3ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+    }
 
-        .sci-btn:hover {
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.45), rgba(177, 122, 255, 0.45));
-            border-color: rgba(79, 172, 254, 0.8);
-            box-shadow: 0 0 20px rgba(79, 172, 254, 0.4);
-            transform: translateY(-2px);
-        }
+    .nav-btn:hover {
+      background: #00f3ff;
+      color: #030712;
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.8);
+      transform: translateY(-50%) scale(1.12);
+    }
 
-        /* X (Twitter) 科技感社交图标样式 */
-        .x-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-            text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
+    .btn-prev { left: -26px; }
+    .btn-next { right: -26px; }
 
-        .x-link svg {
-            width: 18px;
-            height: 18px;
-            fill: #ffffff;
-            transition: fill 0.3s ease;
-        }
-
-        .x-link:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #00f2fe;
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
-            transform: translateY(-2px) scale(1.05);
-        }
-
-        .x-link:hover svg {
-            fill: #00f2fe;
-        }
-
-        /* 模态框（点击图片弹出大图查看） */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(3, 7, 18, 0.88);
-            backdrop-filter: blur(20px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal img {
-            max-width: 85%;
-            max-height: 85%;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 50px rgba(79, 172, 254, 0.3);
-            transform: scale(0.95);
-            transition: transform 0.3s ease;
-        }
-
-        .modal.active img {
-            transform: scale(1);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 30px;
-            right: 40px;
-            font-size: 2rem;
-            color: #fff;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.1);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: background 0.3s;
-        }
-
-        .modal-close:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes zoomIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-    </style>
+    /* 加载中状态样式 */
+    .loading-spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      letter-spacing: 2px;
+      color: #00f3ff;
+      text-shadow: 0 0 10px #00f3ff;
+      z-index: 5;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- 动态背景粒子特效 Canvas -->
-    <canvas id="bg-canvas"></canvas>
+  <!-- Canvas 粒子背景 -->
+  <canvas id="particle-canvas"></canvas>
 
-    <div class="container">
-        <header>
-            <h1>AI 报表图文智能视界</h1>
-            <p>Report Image Intelligence Extraction & Interactive Presentation</p>
-        </header>
+  <!-- 居中主体卡片 -->
+  <div class="showcase-wrapper">
+    <div class="loading-spinner" id="loadingText">INITIALIZING SYSTEM...</div>
 
-        <div class="glass-card">
-            <div class="carousel-viewport" id="carouselViewport" title="点击查看大图">
-                <!-- 动态注入的图片 -->
-                <img id="carouselImg" src="" alt="Report Image">
-            </div>
-            <div class="controls-bar">
-                <div class="info-text" id="infoText">正在加载报表图片...</div>
-                
-                <div class="right-section">
-                    <div class="btn-group">
-                        <button class="sci-btn" id="prevBtn">上一张</button>
-                        <button class="sci-btn" id="nextBtn">下一张</button>
-                    </div>
+    <!-- 左右科技感切换按钮 -->
+    <button class="nav-btn btn-prev" id="btnPrev" aria-label="Previous">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <button class="nav-btn btn-next" id="btnNext" aria-label="Next">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
 
-                    <!-- X (Twitter) 主页图标按钮 -->
-                    <a href="https://x.com/AlanWakexdo" target="_blank" rel="noopener noreferrer" class="x-link" title="前往我的 X (Twitter) 主页">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                        </svg>
-                    </a>
-                </div>
-            </div>
+    <!-- 毛玻璃外壳 -->
+    <div class="glass-card">
+      <div class="swiper" id="mainSwiper">
+        <div class="swiper-wrapper" id="swiperWrapper">
+          <!-- 动态从 API 插入 Swiper Slide -->
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- 全屏灯箱模态框 -->
-    <div class="modal" id="imageModal">
-        <div class="modal-close" id="modalClose">&times;</div>
-        <img id="modalImg" src="" alt="Zoomed Image">
-    </div>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script>
+    // ==========================================
+    // 1. 原生 Canvas 粒子互联特效 (Particle Network)
+    // ==========================================
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particlesArray = [];
 
-    <script>
-        // ==================== 1. 动态粒子光效渲染 (Canvas) ====================
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.8;
+        this.speedX = (Math.random() - 0.5) * 0.8;
+        this.speedY = (Math.random() - 0.5) * 0.8;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+      }
+      draw() {
+        ctx.fillStyle = 'rgba(0, 243, 255, 0.7)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      particlesArray = [];
+      const numberOfParticles = Math.floor((canvas.width * canvas.height) / 12000);
+      for (let i = 0; i < numberOfParticles; i++) {
+        particlesArray.push(new Particle());
+      }
+    }
+    initParticles();
+    window.addEventListener('resize', initParticles);
+
+    function connectParticles() {
+      for (let a = 0; a < particlesArray.length; a++) {
+        for (let b = a; b < particlesArray.length; b++) {
+          const dx = particlesArray[a].x - particlesArray[b].x;
+          const dy = particlesArray[a].y - particlesArray[b].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 110) {
+            const opacity = 1 - (distance / 110);
+            ctx.strokeStyle = `rgba(0, 243, 255, ${opacity * 0.25})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+            ctx.stroke();
+          }
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+      }
+    }
 
-        let particles = [];
-        const numParticles = 40;
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+        particlesArray[i].draw();
+      }
+      connectParticles();
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
 
-        for (let i = 0; i < numParticles; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                radius: Math.random() * 2 + 1,
-                vx: (Math.random() - 0.5) * 0.3,
-                vy: (Math.random() - 0.5) * 0.3,
-                alpha: Math.random() * 0.6 + 0.2
-            });
+    // ==========================================
+    // 2. 初始化轮播与从 Node.js 后端拉取数据
+    // ==========================================
+    let swiperInstance = null;
+
+    function initSwiper() {
+      swiperInstance = new Swiper('#mainSwiper', {
+        loop: true,
+        speed: 700,
+        effect: 'fade',
+        fadeEffect: { crossFade: true },
+        navigation: {
+          nextEl: '#btnNext',
+          prevEl: '#btnPrev',
+        },
+      });
+    }
+
+    async function fetchImages() {
+      const loading = document.getElementById('loadingText');
+      try {
+        // 请求 Node.js 后端 API
+        const response = await fetch('http://localhost:3000/api/images');
+        const result = await response.json();
+
+        if (result.success && result.data.length > 0) {
+          const wrapper = document.getElementById('swiperWrapper');
+          wrapper.innerHTML = '';
+
+          result.data.forEach(item => {
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide';
+            slide.innerHTML = `
+              <img src="${item.url}" alt="Gallery item" loading="lazy">
+              <div class="ai-badge-overlay">
+                <span class="ai-tag">Gemini Vision AI</span>
+                <p class="ai-desc">${item.aiDescription}</p>
+              </div>
+            `;
+            wrapper.appendChild(slide);
+          });
+
+          loading.style.display = 'none';
+          initSwiper();
+        } else {
+          loading.innerText = 'NO DATA RECEIVED';
         }
+      } catch (err) {
+        console.error('Fetch error:', err);
+        loading.innerText = 'CONNECTION ERROR: CHECK BACKEND';
+      }
+    }
 
-        function drawBackground() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'rgba(5, 7, 18, 0.25)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.lineWidth = 0.5;
-            for (let i = 0; i < particles.length; i++) {
-                let p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-
-                if (p.x < 0) p.x = canvas.width;
-                if (p.x > canvas.width) p.x = 0;
-                if (p.y < 0) p.y = canvas.height;
-                if (p.y > canvas.height) p.y = 0;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(147, 197, 253, ${p.alpha})`;
-                ctx.fill();
-
-                for (let j = i + 1; j < particles.length; j++) {
-                    let p2 = particles[j];
-                    let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                    if (dist < 130) {
-                        ctx.strokeStyle = `rgba(167, 139, 250, ${0.2 * (1 - dist / 130)})`;
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
-                    }
-                }
-            }
-            requestAnimationFrame(drawBackground);
-        }
-        drawBackground();
-
-        // ==================== 2. 前端业务逻辑（轮播与交互） ====================
-        const mockReportImages = [
-            { id: 1, url: 'illust_51851354_20261031_001034.jpg', title: 'AI 报表图文分析 - 档案 01' },
-            { id: 2, url: 'illust_106495693_20261031_001210.jpg', title: 'AI 报表图文分析 - 档案 02' },
-            { id: 3, url: 'illust_113051559_20261031_001532.jpg', title: 'AI 报表图文分析 - 档案 03' },
-            { id: 4, url: 'illust_128842292_20261031_001044.jpg', title: 'AI 报表图文分析 - 档案 04' }
-        ];
-
-        let currentIndex = 0;
-        let slideTimer = null;
-
-        const carouselImg = document.getElementById('carouselImg');
-        const infoText = document.getElementById('infoText');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const carouselViewport = document.getElementById('carouselViewport');
-        const imageModal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('modalImg');
-        const modalClose = document.getElementById('modalClose');
-
-        function updateSlide(index) {
-            carouselImg.style.opacity = 0;
-            setTimeout(() => {
-                currentIndex = (index + mockReportImages.length) % mockReportImages.length;
-                const currentItem = mockReportImages[currentIndex];
-                carouselImg.src = currentItem.url;
-                infoText.textContent = `[图 ${currentIndex + 1} / ${mockReportImages.length}] ${currentItem.title}`;
-                carouselImg.style.opacity = 1;
-            }, 200);
-        }
-
-        function nextSlide() { updateSlide(currentIndex + 1); }
-        function prevSlide() { updateSlide(currentIndex - 1); }
-
-        function startAutoPlay() { slideTimer = setInterval(nextSlide, 5000); }
-        function stopAutoPlay() { clearInterval(slideTimer); }
-
-        nextBtn.addEventListener('click', () => { nextSlide(); stopAutoPlay(); startAutoPlay(); });
-        prevBtn.addEventListener('click', () => { prevSlide(); stopAutoPlay(); startAutoPlay(); });
-
-        carouselViewport.addEventListener('click', () => {
-            modalImg.src = mockReportImages[currentIndex].url;
-            imageModal.classList.add('active');
-            stopAutoPlay();
-        });
-
-        modalClose.addEventListener('click', () => {
-            imageModal.classList.remove('active');
-            startAutoPlay();
-        });
-
-        imageModal.addEventListener('click', (e) => {
-            if (e.target === imageModal) {
-                imageModal.classList.remove('active');
-                startAutoPlay();
-            }
-        });
-
-        updateSlide(0);
-        startAutoPlay();
-    </script>
+    fetchImages();
+  </script>
 </body>
 </html>
